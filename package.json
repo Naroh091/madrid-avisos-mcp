@@ -14,8 +14,8 @@
   },
   "files": [
     "dist",
-    "scripts",
-    "skill"
+    "skill",
+    "skill-opencode"
   ],
   "scripts": {
     "build": "tsc",
