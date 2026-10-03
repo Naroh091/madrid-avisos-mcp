@@ -17,6 +17,7 @@ el aviso al Ayuntamiento.
 - [Uso como CLI](#uso-como-cli)
 - [Servidor HTTP (opcional, avanzado)](#servidor-http-opcional-avanzado)
 - [Arquitectura](#arquitectura)
+- [Licencia](#licencia)
 
 ## Inicio rápido
 
@@ -205,3 +206,7 @@ nunca `funnel`): quien llegue a la URL actúa como tu usuario. Para persistencia
 ## Notas
 
 - Algunas categorías exigen usuario registrado; con `login-anonymous` no se envían.
+
+## Licencia
+
+AGPLv3. Ver [LICENSE](LICENSE).
