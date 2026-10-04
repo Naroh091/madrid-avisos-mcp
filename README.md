@@ -68,14 +68,32 @@ necesita procesar la original:
 
 ## ¿Eres un agente IA? Lee esto primero
 
-La skill (`skill/SKILL.md`) no se autoinstala: cópiala al directorio de tu cliente
-y abre sesión nueva.
+Hay una skill por familia de cliente y **no se autoinstalan**: cópiala al directorio de
+tu cliente y abre sesión nueva.
 
 ```bash
 cp -r skill ~/.hermes/skills/madrid-avisos        # Hermes
 cp -r skill ~/.claude/skills/madrid-avisos        # Claude Code
-# o descárgala: https://github.com/Naroh091/madrid-avisos-mcp/blob/main/skill/SKILL.md
+# OpenCode (mkdir -p necesario: el destino suele no existir aún)
+mkdir -p ~/.config/opencode/skills/madrid-avisos-opencode
+cp -r skill-opencode/madrid-avisos-opencode/SKILL.md ~/.config/opencode/skills/madrid-avisos-opencode/
 ```
+
+O descárgala:
+
+- Claude Code / Hermes / OpenClaw: [`skill/SKILL.md`](skill/SKILL.md)
+- OpenCode: [`skill-opencode/madrid-avisos-opencode/SKILL.md`](skill-opencode/madrid-avisos-opencode/SKILL.md)
+
+> OpenCode usa otro prefijo de tools (`madrid-avisos_*`, no `mcp__madrid_avisos__`), así
+> que trae su propia variante en
+> [`skill-opencode/`](skill-opencode/madrid-avisos-opencode/SKILL.md), con nombre propio
+> (`madrid-avisos-opencode`) a propósito.
+>
+> OpenCode también lee `~/.claude/skills/`. Si tienes ahí la variante de Claude y
+> OpenCode, con las dos instaladas gana la que se escanee última y la otra se descarta con
+> un warning en el log; por eso la variante de OpenCode se instala en su propia ruta con
+> nombre propio. Si ya copiaste la de Claude a `~/.claude/skills/madrid-avisos` y no usas
+> Claude Code, bórrala.
 
 Instálalo así (requiere Node 18+):
 
@@ -83,15 +101,19 @@ Instálalo así (requiere Node 18+):
    Almacenamiento local → `https://avisos.madrid.es` → clave `token`). Sin token
    no hay nada que hacer.
 2. **Instalación** según tu cliente ([comandos exactos](#añadir-el-mcp-vía-npx)):
-   Claude Code (`claude mcp add … -- npx -y madrid-avisos-mcp`), Hermes (`hermes mcp add …
+   Claude Code (`claude mcp add … -- npx -y madrid-avisos-mcp`), OpenCode (`opencode mcp add …
+   --env MADRID_AVISOS_TOKEN=… -- npx -y madrid-avisos-mcp`), Hermes (`hermes mcp add …
    --command npx … --args -y madrid-avisos-mcp`) u OpenClaw (`openclaw mcp add …
    --command npx --arg -y --arg madrid-avisos-mcp`). El token viaja en la variable
    `MADRID_AVISOS_TOKEN` de tu config.
 3. **Verifica** (`mcp list` / `test` / `doctor --probe` según cliente): debes ver 11 tools.
-4. **Uso**: hay skill completa en [`skill/SKILL.md`](skill/SKILL.md).
+4. **Uso**: skill completa según tu cliente —
+   [`skill/SKILL.md`](skill/SKILL.md) (Claude Code, Hermes, OpenClaw) o
+   [`skill-opencode/madrid-avisos-opencode/SKILL.md`](skill-opencode/madrid-avisos-opencode/SKILL.md) (OpenCode).
    Lo esencial: solo incidencias genuinas; `create_aviso_from_photo` en 2 fases
    (preview → mostrar al humano → envío solo con su "sí" + `confirm` + `human_confirmed` +
-   `preview_token`); foto por `image_base64`; sin GPS no adivines la ubicación.
+   `preview_token`); la foto por `image_path` si el MCP corre en stdio en tu máquina, o por
+   `image_base64` si es remota; sin GPS no adivines la ubicación.
 
 ## Añadir el MCP vía npx
 
@@ -103,6 +125,69 @@ Requiere Node 18+. `<tu-token>` es tu bearer (paso 2 del [inicio rápido](#inici
 claude mcp add madrid-avisos -e MADRID_AVISOS_TOKEN=<tu-token> -- npx -y madrid-avisos-mcp
 claude mcp list   # verificar
 ```
+
+### OpenCode
+
+```bash
+opencode mcp add madrid-avisos --env MADRID_AVISOS_TOKEN=<tu-token> -- npx -y madrid-avisos-mcp
+opencode mcp list   # verificar: madrid-avisos connected
+```
+
+Equivalente a editar `~/.config/opencode/opencode.jsonc` a mano (esto es justo lo que
+escribe el comando anterior):
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "madrid-avisos": {
+      "type": "local",
+      "command": ["npx", "-y", "madrid-avisos-mcp"],
+      "environment": { "MADRID_AVISOS_TOKEN": "<tu-token>" }
+    }
+  }
+}
+```
+
+Reinicia opencode después de tocar la config: no se recarga en caliente. Las tools
+aparecen como `madrid-avisos_*`.
+
+<details>
+<summary><b>OpenCode v2 (experimental): los servers van bajo <code>mcp.servers</code></b></summary>
+
+En la config v2 la sección `mcp` tiene una forma distinta: los servers se anidan bajo
+`mcp.servers` y `enabled: true` se invierte a `disabled: false`.
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "madrid-avisos": {
+        "type": "local",
+        "command": ["npx", "-y", "madrid-avisos-mcp"],
+        "disabled": false,
+        "environment": { "MADRID_AVISOS_TOKEN": "<tu-token>" }
+      }
+    }
+  }
+}
+```
+
+No hay schema JSON publicado para v2 todavía, así que el editor no puede validarla. Y una
+clave mal escrita **no falla de forma visible**: el server simplemente no aparece en
+`opencode mcp list` y el comando sale con éxito. Solo lo verás si buscas en los logs:
+
+```bash
+opencode mcp list --print-logs --log-level DEBUG 2>&1 | grep -i malformed
+# WARN configuration compatibility diagnostic … kind=invalid … "Native setting could not be lowered because it is malformed"
+```
+
+**v2 no es estable: la forma puede cambiar sin aviso.** Usa la v1 de arriba salvo que sepas
+que tu versión la pide. Verifica con `opencode mcp list` que `madrid-avisos` sale
+`connected` antes de darlo por instalado.
+
+</details>
 
 ### Hermes
 

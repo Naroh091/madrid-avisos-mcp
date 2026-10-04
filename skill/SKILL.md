@@ -11,7 +11,7 @@ metadata:
 
 # Avisos Madrid — incidencias desde una foto
 
-Servidor MCP `madrid-avisos` (10 tools, prefijo `mcp__madrid_avisos__`). Actúas como el
+Servidor MCP `madrid-avisos` (11 tools, prefijo `mcp__madrid_avisos__`). Actúas como el
 dueño del token configurado en el servidor: todo aviso que crees es REAL y lo
 revisa personal municipal. **Solo incidencias genuinas. Nada de pruebas.**
 
@@ -97,14 +97,17 @@ Sin las tres, el servidor bloquea. Respuesta `phase: "sent"` con el aviso creado
 
 ### 4. Adjunta la foto y reporta
 
-Llama `mcp__madrid_avisos__attach_photo` con el `token` del `response` del paso 3 +
-`image_base64` de tu foto + `confirm: true` (también con OK humano). Comprueba con
+Llama `mcp__madrid_avisos__attach_photo` con el `request_token` que viene en `response` del
+paso 3 + la foto (`file_id`, o `image_path` en stdio local, o `image_base64`) +
+`confirm: true` (también con OK humano). Comprueba con
 `mcp__madrid_avisos__list_my_avisos` y reporta: ID (`service_request_id`), estado,
 dirección y si la foto quedó adjunta (`media_url`).
 
 ## Pitfalls
 
-- Pasar `image_path` con una ruta de tu máquina: el servidor no la ve. Siempre `image_base64`.
+- Pasar `image_path` a un servidor MCP **remoto**: no ve tu disco. `image_path` solo vale en
+  stdio/CLI en la misma máquina (ahí es la vía preferida); para remoto, sube la foto con
+  `PUT /upload` y usa el `file_id`, o `image_base64` si ya la tienes en el contexto.
 - Enviar `additional_data` con el **código** de pregunta en vez del **id**: el servidor lo
   rechaza. El id sale de `get_category`.
 - Pasar `device_type: "android"`: NO es un literal, es el id del origin-device del canal.
