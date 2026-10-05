@@ -9,6 +9,7 @@ que de forma autónoma describa el problema, seleccione la categoría más adecu
 el aviso al Ayuntamiento.
 
 - [Inicio rápido](#inicio-rápido)
+- [Alcobendas](#alcobendas)
 - [Fotos demasiado grandes para el modelo](#fotos-demasiado-grandes-para-el-modelo)
 - [¿Eres un agente IA? Lee esto primero](#eres-un-agente-ia-lee-esto-primero)
 - [Añadir el MCP vía npx](#añadir-el-mcp-vía-npx)
@@ -46,6 +47,16 @@ Copia el valor de la clave `token` (empieza por `ey…`). Ese es tu `MADRID_AVIS
    O directamente `create_aviso_from_photo` con la imagen.
 
 Todo corre en tu máquina y el token no sale de ella: cada aviso se crea como tu usuario.
+
+## Alcobendas
+
+El Ayuntamiento de Alcobendas ("Alcobendas Actúa") usa la misma plataforma (Mejora Tu Ciudad), así
+que el mismo servidor vale con `MADRID_AVISOS_CITY=alcobendas`. El token se saca igual, pero
+iniciando sesión en <https://mapa.mejoratuciudad.org/org.alcobendas> (clave `token` del almacenamiento
+local). Para usar las dos ciudades, añade un segundo servidor `alcobendas-avisos` como en
+[Añadir el MCP vía npx](#añadir-el-mcp-vía-npx), con `MADRID_AVISOS_CITY=alcobendas` y su `MADRID_AVISOS_TOKEN`.
+
+Alcobendas exige nombre, apellidos y teléfono del informante en cada aviso: se toman de tu perfil.
 
 ## Fotos demasiado grandes para el modelo
 
