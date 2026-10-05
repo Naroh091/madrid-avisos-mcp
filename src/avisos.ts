@@ -3,7 +3,7 @@
  * Reutilizadas tanto por el servidor MCP como por el CLI.
  */
 import { AvisosClient } from "./client.js";
-import { APP_KEY, CLIENT_ID, DEFAULT_DEVICE_TYPE, DEFAULT_JURISDICTION, DEFAULT_JURISDICTION_ELEMENT, DEVICE_ID } from "./config.js";
+import { ALCOBENDAS, APP_KEY, CLIENT_ID, DEFAULT_DEVICE_TYPE, DEFAULT_JURISDICTION, DEFAULT_JURISDICTION_ELEMENT, DEVICE_ID } from "./config.js";
 import type { CreateAvisoFromPhotoInput, CreateAvisoInput, CreateAvisoPayload } from "./types.js";
 import { loadPhotoBuffer, parsePhoto, previewToken, saveUpload, downscaleForVision, resolveUpload, type PhotoInfo } from "./photo.js";
 
@@ -32,6 +32,19 @@ export async function refreshSession(client: AvisosClient): Promise<{ refreshed:
 /** Perfil del usuario autenticado. */
 export async function getProfile(client: AvisosClient): Promise<unknown> {
   return client.get("profile");
+}
+
+/** Alcobendas exige nombre, apellidos y teléfono del informante: como su web, se toman del perfil. */
+async function informantFromProfile(client: AvisosClient, informant: CreateAvisoInput["informant"]) {
+  if (!ALCOBENDAS || !client.hasToken()) return informant;
+  const p = (await getProfile(client).catch(() => ({}))) as Record<string, string | undefined>;
+  return { first_name: p.first_name, last_name: p.last_name, phone: p.phone, email: p.email, ...informant };
+}
+
+/** Alcobendas incluye el polígono del término municipal (~1 MB) en location-additional-data. */
+function withoutGeometry<T>(res: T): T {
+  if (!Array.isArray(res)) return res;
+  return res.map((r) => (r?.geometry ? { ...r, geometry: "(omitida)" } : r)) as T;
 }
 
 export interface Category {
@@ -117,7 +130,7 @@ export function parseAddressResponse(res: unknown): ResolvedAddress | null {
     if (typeof a.value === "string" && a.value.trim() === "") continue;
     answers.push({ question: a.question.id, value: String(a.value) });
   }
-  return { formatted_address: first.formatted_address, answers, raw: first };
+  return { formatted_address: first.formatted_address, answers, raw: withoutGeometry([first])[0] };
 }
 
 /** Caché del device id por canal (jurisdictions rara vez cambia). */
@@ -199,7 +212,7 @@ export async function resolveLocation(
       .get("request_duplicate", { service_id: serviceId, lat, lng })
       .catch((e) => ({ error: String(e) })),
   ]);
-  return { validate_position, location_additional_data, duplicates };
+  return { validate_position, location_additional_data: withoutGeometry(location_additional_data), duplicates };
 }
 
 /** Construye el cuerpo JSON del POST requests (rama CityApp) a partir de la entrada. */
@@ -257,7 +270,8 @@ export async function createAviso(client: AvisosClient, input: CreateAvisoInput)
   // device_type dinámico (mejor esfuerzo): si falla, el valor por defecto de buildCreatePayload.
   const device_type =
     input.device_type ?? (await resolveDeviceType(client).catch(() => DEFAULT_DEVICE_TYPE));
-  const payload = buildCreatePayload({ ...input, address_string, location_additional_data, device_type });
+  const informant = await informantFromProfile(client, input.informant);
+  const payload = buildCreatePayload({ ...input, address_string, location_additional_data, device_type, informant });
   const endpoint = "requests";
   if (!input.confirm) {
     return { dry_run: true, payload, endpoint };
@@ -444,6 +458,7 @@ export async function createAvisoFromPhoto(
     resolveLocation(client, input.service_id, lat, lng, input.jurisdiction_element),
   ]);
 
+  const informant = await informantFromProfile(client, input.informant);
   let description_drafted = false;
   let description = input.description?.trim();
   if (!description) {
@@ -477,7 +492,7 @@ export async function createAvisoFromPhoto(
     zones: input.zones,
     location_additional_data,
     additional_data: input.additional_data,
-    informant: input.informant,
+    informant,
     device_type,
     confirm: false,
   });
@@ -528,7 +543,7 @@ export async function createAvisoFromPhoto(
     zones: input.zones,
     location_additional_data,
     additional_data: input.additional_data,
-    informant: input.informant,
+    informant,
     device_type,
     confirm: true,
   });

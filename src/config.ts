@@ -8,6 +8,28 @@
  * programáticas con un bearer token (Akamai solo protege el flujo de login web).
  */
 
+/**
+ * Alcobendas usa la misma plataforma (Mejora Tu Ciudad). Con MADRID_AVISOS_CITY=alcobendas
+ * solo cambian servidor, credenciales de la app "Alcobendas" (v6.0.364) y jurisdicción,
+ * verificados contra GET jurisdictions?app_key=11. Las variables definidas mandan.
+ */
+export const ALCOBENDAS = process.env.MADRID_AVISOS_CITY === "alcobendas";
+if (ALCOBENDAS) {
+  const defaults: Record<string, string> = {
+    MADRID_AVISOS_BASE_URL: "https://api.mejoratuciudad.org/",
+    MADRID_AVISOS_APP_KEY: "11",
+    MADRID_AVISOS_CLIENT_ID: "1y63ibwr2xlw8kwkg0g48swokkoosk4cggws08s4cg4ws08ogk",
+    MADRID_AVISOS_APP_VERSION: "6.0.364",
+    MADRID_AVISOS_JURISDICTION: "org.alcobendas",
+    MADRID_AVISOS_JURISDICTION_ELEMENT: "5c9b55579650e67d42985e80",
+    MADRID_AVISOS_DEVICE_TYPE: "60c09cdccdf34808168b4573",
+  };
+  for (const [k, v] of Object.entries(defaults)) process.env[k] ??= v;
+}
+
+/** Web donde iniciar sesión y copiar la clave `token` del almacenamiento local. */
+export const LOGIN_URL = ALCOBENDAS ? "https://mapa.mejoratuciudad.org/org.alcobendas" : "https://avisos.madrid.es";
+
 export const BASE_URL =
   process.env.MADRID_AVISOS_BASE_URL ?? "https://servpub.madrid.es/AVSICAPI/";
 

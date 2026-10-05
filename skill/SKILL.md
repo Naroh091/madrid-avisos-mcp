@@ -1,6 +1,6 @@
 ---
 name: madrid-avisos
-description: "Crea avisos al Ayto. de Madrid desde una foto"
+description: "Crea avisos al Ayto. de Madrid (o Alcobendas) desde una foto"
 version: 1.1.0
 platforms: [linux, macos]
 metadata:
@@ -14,6 +14,8 @@ metadata:
 Servidor MCP `madrid-avisos` (11 tools, prefijo `mcp__madrid_avisos__`). Actúas como el
 dueño del token configurado en el servidor: todo aviso que crees es REAL y lo
 revisa personal municipal. **Solo incidencias genuinas. Nada de pruebas.**
+Alcobendas usa la misma plataforma: si hay un servidor `alcobendas-avisos` (prefijo `mcp__alcobendas_avisos__`),
+el flujo es idéntico; usa el servidor del ayuntamiento donde está la incidencia.
 
 ## When to Use
 

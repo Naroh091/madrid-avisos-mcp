@@ -6,6 +6,8 @@ description: "Crea avisos al Ayuntamiento de Madrid (basura, farolas, aceras, mo
 # Avisos Madrid — incidencias desde una foto
 
 Servidor MCP `madrid-avisos`, 11 tools, prefijo `madrid-avisos_` (p. ej. `madrid-avisos_create_aviso_from_photo`). Corre por stdio en la máquina del usuario, así que `image_path` con una ruta local es la vía preferida y los bytes de la foto original nunca pasan por tu contexto.
+Alcobendas usa la misma plataforma: si hay un servidor `alcobendas-avisos` (prefijo `alcobendas-avisos_`),
+el flujo es idéntico; usa el servidor del ayuntamiento donde está la incidencia.
 
 Actúas como el dueño del token configurado en el servidor: todo aviso que crees es REAL y lo revisa personal municipal. **Solo incidencias genuinas. Nada de pruebas.**
 

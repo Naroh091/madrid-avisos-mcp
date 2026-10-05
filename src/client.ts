@@ -12,6 +12,7 @@ import {
   BASE_URL,
   CLIENT_ID,
   DEFAULT_LANGUAGE,
+  LOGIN_URL,
   REFRESH_TOKEN,
   TOKEN,
   TOKEN_STORE,
@@ -154,7 +155,7 @@ export class AvisosClient {
         // Sin refresh token (o refresco fallido): mensaje accionable para la opción "re-pegar token".
         const hint = this.canRefresh()
           ? "El refresh token fue rechazado (¿caducado/revocado?). Obtén una sesión nueva."
-          : "El access token ha caducado o no es válido. Inicia sesión en https://avisos.madrid.es y actualiza MADRID_AVISOS_TOKEN con el token nuevo.";
+          : `El access token ha caducado o no es válido. Inicia sesión en ${LOGIN_URL} y actualiza MADRID_AVISOS_TOKEN con el token nuevo.`;
         throw new AvisosApiError(401, url, hint);
       }
     }
